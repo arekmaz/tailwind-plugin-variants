@@ -26,7 +26,7 @@ type PrefixFn = (name: string) => string;
 
 declare const buildPlugin: (
   build: BuildVariantsFn,
-  prefix: PrefixFn
+  prefix?: PrefixFn
 ) => { handler: () => void };
 
 export = buildPlugin;
