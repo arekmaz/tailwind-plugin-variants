@@ -15,12 +15,14 @@ const plugin = require("tailwindcss/plugin");
  * @property {(key: string) => (val: string) => string} dataValue;
  * @property {(key: string) => (val: string) => string} notDataValue;
  * @property {(val: string) => string} peerDataBool;
- * @property {(val: string) => string} peerDataValue;
+ * @property {(key: string) => (val: string) => string} peerDataValue;
  *
  * @property {(val: string) => string} ariaBool;
  * @property {(val: string) => string} notAriaBool;
  * @property {(key: string) => (val: string) => string} ariaValue;
  * @property {(key: string) => (val: string) => string} notAriaValue;
+ * @property {(val: string) => string} peerAriaBool;
+ * @property {(key: string) => (val: string) => string} peerAriaValue;
  */
 
 /**
@@ -68,8 +70,8 @@ const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
   const notDataValue = (key) => notValue(data(key));
   /** @type {Config['peerDataBool']} */
   const peerDataBool = (key) => peerBool(data(key));
-  /** @type {Config['notDataValue']} */
-  const peerDataValue = (key) => peerBool(data(key));
+  /** @type {Config['peerDataValue']} */
+  const peerDataValue = (key) => (val) => peerAttribute(dataValue(key)(val));
 
   /** @type {Config['ariaBool']} */
   const ariaBool = (key) => bool(aria(key));
@@ -79,6 +81,10 @@ const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
   const ariaValue = (key) => value(aria(key));
   /** @type {Config['notAriaValue']} */
   const notAriaValue = (key) => notValue(aria(key));
+  /** @type {Config['peerAriaBool']} */
+  const peerAriaBool = (key) => peerBool(aria(key));
+  /** @type {Config['peerDataValue']} */
+  const peerAriaValue = (key) => (val) => peerAttribute(ariaValue(key)(val));
 
   /** @type {Config} */
   const config = {
@@ -95,17 +101,25 @@ const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
     notDataBool,
     dataValue,
     notDataValue,
+    peerDataBool,
+    peerDataValue,
 
     ariaBool,
     notAriaBool,
     ariaValue,
     notAriaValue,
+    peerAriaValue,
+    peerAriaBool,
   };
 
   const variants = makeVariants(config);
 
   return plugin(({ addVariant }) => {
     Object.entries(variants).forEach(([variantName, builders]) => {
+      if (builders.length === 0) {
+        return;
+      }
+
       addVariant(
         buildVariantKey(variantName),
         builders.map((builder) => builder(variantName))
