@@ -3,11 +3,9 @@ const plugin = require("tailwindcss/plugin");
  * Plugin config
  * @typedef {Object} Config
  * @property {(a: string) => string} attribute  - The title
- * @property {(key: string) => (val: string) => string} dataVal;
+ * @property {(key: string) => (val: string) => string} dataAttribute;
  * @property {(a: string) => string} pseudoclass;
- * @property {(val: string) => string} dataState;
  * @property {(val: string) => string} dataBool;
- * @property {(val: string) => string} dataOrientation;
  */
 
 /**
@@ -18,17 +16,17 @@ const plugin = require("tailwindcss/plugin");
  */
 const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
   const attribute = (a) => `&[${a}]`;
-  const dataVal = (key) => (val) => attribute(`data-${key}=${val}`);
+  const notAttribute = (a) => `&:not([${a}])`;
+  const dataAttribute = (key) => (val) => attribute(`data-${key}=${val}`);
 
   const pseudoclass = (a) => `&:${a}`;
   const dataBool = (key) => attribute(`data-${key}`);
 
-  const dataState = dataVal("state");
-  const dataOrientation = dataVal("orientation");
+  const dataState = dataAttribute("state");
+  const dataOrientation = dataAttribute("orientation");
 
   const config = {
-    attribute,
-    dataVal,
+    dataAttribute,
     pseudoclass,
     dataState,
     dataBool,
