@@ -11,6 +11,45 @@ test("empty", () => {
   expect(addVariant).not.toHaveBeenCalled();
 });
 
+test("attribute", () => {
+  const p = addVariantsPlugin((b) => ({
+    href: [b.attribute],
+  }));
+
+  const addVariant = vi.fn();
+
+  p.handler({ addVariant } as any);
+
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toBeCalledWith("href", ["&[href]"]);
+});
+
+test("notAttribute", () => {
+  const p = addVariantsPlugin((b) => ({
+    href: [b.notAttribute],
+  }));
+
+  const addVariant = vi.fn();
+
+  p.handler({ addVariant } as any);
+
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toBeCalledWith("href", ["&:not([href])"]);
+});
+
+test("peerAttribute", () => {
+  const p = addVariantsPlugin((b) => ({
+    href: [b.peerAttribute],
+  }));
+
+  const addVariant = vi.fn();
+
+  p.handler({ addVariant } as any);
+
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toBeCalledWith("href", [":merge(.peer)[href] ~ &"]);
+});
+
 test("dataBool", () => {
   const p = addVariantsPlugin((b) => ({
     checked: [b.dataBool],
@@ -24,14 +63,25 @@ test("dataBool", () => {
   expect(addVariant).toBeCalledWith("checked", ["&[data-checked]"]);
 });
 
-test("dataAttribute", () => {
+test("notDataBool", () => {
+  const p = addVariantsPlugin((b) => ({
+    checked: [b.notDataBool],
+  }));
+
+  const addVariant = vi.fn();
+
+  p.handler({ addVariant } as any);
+
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toBeCalledWith("checked", ["&:not([data-checked])"]);
+});
+
+test("dataValue", () => {
   const p = addVariantsPlugin((b) => {
-    const dataPosition = b.dataAttribute("position");
+    const dataPosition = b.dataValue("position");
 
     return {
       last: [dataPosition],
-      first: [dataPosition],
-      second: [dataPosition],
     };
   });
 
@@ -39,15 +89,28 @@ test("dataAttribute", () => {
 
   p.handler({ addVariant } as any);
 
-  expect(addVariant).toHaveBeenCalledTimes(3);
-  expect(addVariant).toHaveBeenNthCalledWith(1, "last", [
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toHaveBeenLastCalledWith("last", [
     "&[data-position=last]",
   ]);
-  expect(addVariant).toHaveBeenNthCalledWith(2, "first", [
-    "&[data-position=first]",
-  ]);
-  expect(addVariant).toHaveBeenNthCalledWith(3, "second", [
-    "&[data-position=second]",
+});
+
+test("notDataValue", () => {
+  const p = addVariantsPlugin((b) => {
+    const dataPosition = b.notDataValue("position");
+
+    return {
+      last: [dataPosition],
+    };
+  });
+
+  const addVariant = vi.fn();
+
+  p.handler({ addVariant } as any);
+
+  expect(addVariant).toHaveBeenCalledTimes(1);
+  expect(addVariant).toHaveBeenNthCalledWith(1, "last", [
+    "&:not([data-position=last])",
   ]);
 });
 

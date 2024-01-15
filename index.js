@@ -1,11 +1,26 @@
 const plugin = require("tailwindcss/plugin");
 /**
- * Plugin config
+ * Plugin helpers
  * @typedef {Object} Config
- * @property {(a: string) => string} attribute  - The title
- * @property {(key: string) => (val: string) => string} dataAttribute;
+ * @property {(val: string) => string} attribute;
+ * @property {(val: string) => string} notAttribute;
+ * @property {(val: string) => string} peerAttribute;
  * @property {(a: string) => string} pseudoclass;
+ * @property {(val: string) => string} bool;
+ * @property {(val: string) => string} notBool;
+ * @property {(val: string) => string} peerBool;
+ *
  * @property {(val: string) => string} dataBool;
+ * @property {(val: string) => string} notDataBool;
+ * @property {(key: string) => (val: string) => string} dataValue;
+ * @property {(key: string) => (val: string) => string} notDataValue;
+ * @property {(val: string) => string} peerDataBool;
+ * @property {(val: string) => string} peerDataValue;
+ *
+ * @property {(val: string) => string} ariaBool;
+ * @property {(val: string) => string} notAriaBool;
+ * @property {(key: string) => (val: string) => string} ariaValue;
+ * @property {(key: string) => (val: string) => string} notAriaValue;
  */
 
 /**
@@ -15,22 +30,76 @@ const plugin = require("tailwindcss/plugin");
  * @param {(name: string) => string} buildVariantKey
  */
 const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
+  const data = (key) => `data-${key}`;
+  const aria = (key) => `aria-${key}`;
+
+  /** @type {Config['attribute']} */
   const attribute = (a) => `&[${a}]`;
+
+  /** @type {(key: string) => (val: string) => string} */
+  const value = (key) => (val) => attribute(`${key}=${val}`);
+  /** @type {(key: string) => (val: string) => string} */
+  const notValue = (key) => (val) => notAttribute(`${key}=${val}`);
+
+  /** @type {Config['notAttribute']} */
   const notAttribute = (a) => `&:not([${a}])`;
-  const dataAttribute = (key) => (val) => attribute(`data-${key}=${val}`);
 
+  /** @type {Config['peerAttribute']} */
+  const peerAttribute = (a) => `:merge(.peer)[${a}] ~ &`;
+
+  /** @type {Config['pseudoclass']} */
   const pseudoclass = (a) => `&:${a}`;
-  const dataBool = (key) => attribute(`data-${key}`);
 
-  const dataState = dataAttribute("state");
-  const dataOrientation = dataAttribute("orientation");
+  /** @type {Config['bool']} */
+  const bool = attribute;
+  /** @type {Config['notBool']} */
+  const notBool = notAttribute;
 
+  /** @type {Config['peerBool']} */
+  const peerBool = peerAttribute;
+
+  /** @type {Config['dataBool']} */
+  const dataBool = (key) => bool(data(key));
+  /** @type {Config['notDataBool']} */
+  const notDataBool = (key) => notBool(data(key));
+  /** @type {Config['dataValue']} */
+  const dataValue = (key) => value(data(key));
+  /** @type {Config['notDataValue']} */
+  const notDataValue = (key) => notValue(data(key));
+  /** @type {Config['peerDataBool']} */
+  const peerDataBool = (key) => peerBool(data(key));
+  /** @type {Config['notDataValue']} */
+  const peerDataValue = (key) => peerBool(data(key));
+
+  /** @type {Config['ariaBool']} */
+  const ariaBool = (key) => bool(aria(key));
+  /** @type {Config['notAriaBool']} */
+  const notAriaBool = (key) => notBool(aria(key));
+  /** @type {Config['ariaValue']} */
+  const ariaValue = (key) => value(aria(key));
+  /** @type {Config['notAriaValue']} */
+  const notAriaValue = (key) => notValue(aria(key));
+
+  /** @type {Config} */
   const config = {
-    dataAttribute,
+    attribute,
+    notAttribute,
+    peerAttribute,
     pseudoclass,
-    dataState,
+
+    bool,
+    notBool,
+    peerBool,
+
     dataBool,
-    dataOrientation,
+    notDataBool,
+    dataValue,
+    notDataValue,
+
+    ariaBool,
+    notAriaBool,
+    ariaValue,
+    notAriaValue,
   };
 
   const variants = makeVariants(config);
