@@ -1,4 +1,20 @@
 const plugin = require("tailwindcss/plugin");
+
+/**
+ * @example pipe(a => a + 2)(3) === 5
+ * @example pipe(a => a + 2, a => a - 3)(5) === 4
+ * @example pipe(a => a + 5, a => a - 2, a => a * 2)(1) === 8
+ */
+const pipe =
+  (
+    /** @type {Function} */
+    firstFn,
+    /** @type {Function[]} */
+    ...fns
+  ) =>
+  (arg) =>
+    fns.reduce((acc, fn) => fn(acc), firstFn(arg));
+
 /**
  * Plugin helpers
  * @typedef {Object} Config
@@ -61,30 +77,30 @@ const addVariantsPlugin = (makeVariants, buildVariantKey = (name) => name) => {
   const peerBool = peerAttribute;
 
   /** @type {Config['dataBool']} */
-  const dataBool = (key) => bool(data(key));
+  const dataBool = pipe(data, bool);
   /** @type {Config['notDataBool']} */
-  const notDataBool = (key) => notBool(data(key));
+  const notDataBool = pipe(data, notBool);
   /** @type {Config['dataValue']} */
-  const dataValue = (key) => value(data(key));
+  const dataValue = pipe(data, value);
   /** @type {Config['notDataValue']} */
-  const notDataValue = (key) => notValue(data(key));
+  const notDataValue = pipe(data, notValue);
   /** @type {Config['peerDataBool']} */
-  const peerDataBool = (key) => peerBool(data(key));
+  const peerDataBool = pipe(data, peerBool);
   /** @type {Config['peerDataValue']} */
-  const peerDataValue = (key) => (val) => peerAttribute(dataValue(key)(val));
+  const peerDataValue = (key) => pipe(dataValue(key), peerAttribute);
 
   /** @type {Config['ariaBool']} */
-  const ariaBool = (key) => bool(aria(key));
+  const ariaBool = pipe(aria, bool);
   /** @type {Config['notAriaBool']} */
-  const notAriaBool = (key) => notBool(aria(key));
+  const notAriaBool = pipe(aria, notBool);
   /** @type {Config['ariaValue']} */
-  const ariaValue = (key) => value(aria(key));
+  const ariaValue = pipe(aria, value);
   /** @type {Config['notAriaValue']} */
-  const notAriaValue = (key) => notValue(aria(key));
+  const notAriaValue = pipe(aria, notValue);
   /** @type {Config['peerAriaBool']} */
-  const peerAriaBool = (key) => peerBool(aria(key));
+  const peerAriaBool = pipe(aria, peerBool);
   /** @type {Config['peerDataValue']} */
-  const peerAriaValue = (key) => (val) => peerAttribute(ariaValue(key)(val));
+  const peerAriaValue = (key) => pipe(ariaValue(key), peerAttribute);
 
   /** @type {Config} */
   const config = {
